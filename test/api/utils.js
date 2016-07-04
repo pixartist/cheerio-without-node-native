@@ -62,10 +62,10 @@ describe('cheerio', function() {
     //   expect($html('script')[0].type).to.be('tag');
     // });
 
-    it('(buffer) : should accept a buffer', function() {
-      var $html = cheerio.load(new Buffer('<div>foo</div>'));
-      expect($html.html()).to.be('<div>foo</div>');
-    });
+    // it('(buffer) : should accept a buffer', function() {
+    //   var $html = cheerio.load(new Buffer('<div>foo</div>'));
+    //   expect($html.html()).to.be('<div>foo</div>');
+    // });
 
   });
 
