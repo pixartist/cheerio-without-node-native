@@ -2,6 +2,8 @@
 
 [cheerio](https://github.com/cheeriojs/cheerio) build that excludes node native modules so that you can use it in platforms like React Native.
 
+cheerio version: `0.20.0`
+
 ```
 npm i cheerio-without-node-native
 ```
