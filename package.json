@@ -1,6 +1,6 @@
 {
   "name": "cheerio-without-node-native",
-  "version": "0.20.1",
+  "version": "0.20.2",
   "description": "Cheerio build that excludes node native modules so that you can use it in platforms like React Native.",
   "license": "MIT",
   "keywords": [
