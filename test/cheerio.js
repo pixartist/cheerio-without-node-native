@@ -105,8 +105,8 @@ describe('cheerio', function() {
 
   it('should select only elements inside given context (Issue #193)', function() {
     var q = $.load(food),
-        fruits = q('#fruits'),
-        fruitElements = q('li', fruits);
+        $fruits = q('#fruits'),
+        fruitElements = q('li', $fruits);
 
     expect(fruitElements).to.have.length(3);
   });
@@ -239,6 +239,96 @@ describe('cheerio', function() {
     expect(typeof $elem.text()).to.equal('string');
   });
 
+  describe('.merge', function() {
+    var arr1, arr2;
+    beforeEach(function(){
+      arr1 = [1,2,3];
+      arr2 = [4,5,6];
+    });
+
+    it('should be a function', function() {
+      expect(typeof $.merge).to.equal('function');
+    });
+
+    it('(arraylike, arraylike) : should return an array', function() {
+      var ret = $.merge(arr1, arr2);
+      expect(typeof ret).to.equal('object');
+      expect(ret instanceof Array).to.be.ok();
+    });
+
+    it('(arraylike, arraylike) : should modify the first array', function() {
+      $.merge(arr1, arr2);
+      expect(arr1).to.have.length(6);
+    });
+
+    it('(arraylike, arraylike) : should not modify the second array', function() {
+      $.merge(arr1, arr2);
+      expect(arr2).to.have.length(3);
+    });
+
+    it('(arraylike, arraylike) : should handle objects that arent arrays, but are arraylike', function() {
+      arr1 = {};
+      arr2 = {};
+      arr1.length = 3;
+      arr1[0] = 'a';
+      arr1[1] = 'b';
+      arr1[2] = 'c';
+      arr2.length = 3;
+      arr2[0] = 'd';
+      arr2[1] = 'e';
+      arr2[2] = 'f';
+      $.merge(arr1, arr2);
+      expect(arr1).to.have.length(6);
+      expect(arr1[3]).to.equal('d');
+      expect(arr1[4]).to.equal('e');
+      expect(arr1[5]).to.equal('f');
+      expect(arr2).to.have.length(3);
+    });
+
+    it('(?, ?) : should gracefully reject invalid inputs', function() {
+      var ret = $.merge([4],3);
+      expect(ret).to.not.be.ok();
+      ret = $.merge({},{});
+      expect(ret).to.not.be.ok();
+      ret = $.merge([],{});
+      expect(ret).to.not.be.ok();
+      ret = $.merge({},[]);
+      expect(ret).to.not.be.ok();
+      var fakeArray1 = {length: 3};
+      fakeArray1[0] = 'a';
+      fakeArray1[1] = 'b';
+      fakeArray1[3] = 'd';
+      ret = $.merge(fakeArray1,[]);
+      expect(ret).to.not.be.ok();
+      ret = $.merge([], fakeArray1);
+      expect(ret).to.not.be.ok();
+      fakeArray1 = {};
+      fakeArray1.length = '7';
+      ret = $.merge(fakeArray1, []);
+      expect(ret).to.not.be.ok();
+      fakeArray1.length = -1;
+      ret = $.merge(fakeArray1, []);
+      expect(ret).to.not.be.ok();
+    });
+
+    it('(?, ?) : should no-op on invalid inputs', function() {
+      var fakeArray1 = {length: 3};
+      fakeArray1[0] = 'a';
+      fakeArray1[1] = 'b';
+      fakeArray1[3] = 'd';
+      var ret = $.merge(fakeArray1, []);
+      expect(fakeArray1).to.have.length(3);
+      expect(fakeArray1[0] = 'a');
+      expect(fakeArray1[1] = 'b');
+      expect(fakeArray1[3] = 'd');
+      ret = $.merge([], fakeArray1);
+      expect(fakeArray1).to.have.length(3);
+      expect(fakeArray1[0] = 'a');
+      expect(fakeArray1[1] = 'b');
+      expect(fakeArray1[3] = 'd');
+    });
+  });
+
   describe('.load', function() {
 
     it('should generate selections as proper instances', function() {
@@ -263,32 +353,32 @@ describe('cheerio', function() {
       expect(q('ul')).to.have.length(3);
     });
 
-    it('should render xml in html() when options.xmlMode = true', function() {
+    it('should render xml in html() when options.xml = true', function() {
       var str = '<MixedCaseTag UPPERCASEATTRIBUTE=""></MixedCaseTag>',
           expected = '<MixedCaseTag UPPERCASEATTRIBUTE=""/>',
-          dom = $.load(str, {xmlMode: true});
+          dom = $.load(str, {xml: true});
 
       expect(dom('MixedCaseTag').get(0).tagName).to.equal('MixedCaseTag');
       expect(dom.html()).to.be(expected);
     });
 
-    it('should render xml in html() when options.xmlMode = true passed to html()', function() {
+    it('should render xml in html() when options.xml = true passed to html()', function() {
       var str = '<MixedCaseTag UPPERCASEATTRIBUTE=""></MixedCaseTag>',
-          // since parsing done without xmlMode flag, all tags converted to lowercase
-          expectedXml = '<mixedcasetag uppercaseattribute=""/>',
-          expectedNoXml = '<mixedcasetag uppercaseattribute=""></mixedcasetag>',
+          // since parsing done without xml flag, all tags converted to lowercase
+          expectedXml = '<html><head/><body><mixedcasetag uppercaseattribute=""/></body></html>',
+          expectedNoXml = '<html><head></head><body><mixedcasetag uppercaseattribute=""></mixedcasetag></body></html>',
           dom = $.load(str);
 
       expect(dom('MixedCaseTag').get(0).tagName).to.equal('mixedcasetag');
       expect(dom.html()).to.be(expectedNoXml);
-      expect(dom.html({xmlMode: true})).to.be(expectedXml);
+      expect(dom.html({xml: true})).to.be(expectedXml);
     });
 
     it('should respect options on the element level', function() {
       var str = '<!doctype html><html><head><title>Some test</title></head><body><footer><p>Copyright &copy; 2003-2014</p></footer></body></html>',
           expectedHtml = '<p>Copyright &copy; 2003-2014</p>',
           expectedXml = '<p>Copyright &#xA9; 2003-2014</p>',
-          domNotEncoded = $.load(str, {decodeEntities: false}),
+          domNotEncoded = $.load(str, {xml: {decodeEntities: false}}),
           domEncoded = $.load(str);
 
       expect(domNotEncoded('footer').html()).to.be(expectedHtml);
