@@ -2,10 +2,10 @@
 
 [cheerio](https://github.com/cheeriojs/cheerio) build that excludes node native modules so that you can use it in platforms like React Native.
 
-cheerio version: `1.0.0-rc.2`
+cheerio version: `0.20.2`
 
 ```
-npm i cheerio-without-node-native
+npm i cheerio-without-node-native@0.20.2
 ```
 
 * use [htmlparser2-without-node-native](https://github.com/oyyd/htmlparser2-without-node-native) instead of [htmlparser2](https://github.com/fb55/htmlparser2).
